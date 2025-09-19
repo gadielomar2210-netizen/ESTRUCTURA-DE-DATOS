@@ -1,0 +1,79 @@
+import random
+import time
+
+# -------------------------
+# Creación de matrices
+# -------------------------
+
+def crear_layout_A(n_alumnos, n_materias):
+    """
+    Layout A: filas = materias, columnas = alumnos
+    """
+    return [[random.randint(0,100) for _ in range(n_alumnos)] for _ in range(n_materias)]
+
+def crear_layout_B(n_alumnos, n_materias):
+    """
+    Layout B: filas = alumnos, columnas = materias
+    """
+    return [[random.randint(0,100) for _ in range(n_materias)] for _ in range(n_alumnos)]
+
+# -------------------------
+# Acceso en cada layout
+# -------------------------
+
+def buscar_en_A(matA, alumno_1based, materia_1based):
+    return matA[materia_1based-1][alumno_1based-1]
+
+def buscar_en_B(matB, alumno_1based, materia_1based):
+    return matB[alumno_1based-1][materia_1based-1]
+
+# -------------------------
+# Medición de tiempos
+# -------------------------
+
+def medir_tiempo(matA, matB, n_alumnos, n_materias, pruebas=10000):
+    pruebas_list = [(random.randint(1,n_alumnos), random.randint(1,n_materias)) for _ in range(pruebas)]
+
+    # Layout A
+    t0 = time.perf_counter()
+    for a,m in pruebas_list:
+        _ = buscar_en_A(matA, a, m)
+    tA = time.perf_counter() - t0
+
+    # Layout B
+    t0 = time.perf_counter()
+    for a,m in pruebas_list:
+        _ = buscar_en_B(matB, a, m)
+    tB = time.perf_counter() - t0
+
+    return tA, tB
+
+# -------------------------
+# Programa principal
+# -------------------------
+
+if __name__ == "__main__":
+    # Pide datos al usuario
+    n_alumnos = int(input("¿Cuántos alumnos quieres generar? "))
+    n_materias = int(input("¿Cuántas materias quieres generar? "))
+
+    alumno_buscar = int(input(f"¿Qué número de alumno quieres buscar? (1 - {n_alumnos}): "))
+    materia_buscar = int(input(f"¿Qué número de materia quieres buscar? (1 - {n_materias}): "))
+
+    # Genera matrices
+    matA = crear_layout_A(n_alumnos, n_materias)
+    matB = crear_layout_B(n_alumnos, n_materias)
+
+    # Búsqueda en ambas estructuras
+    valorA = buscar_en_A(matA, alumno_buscar, materia_buscar)
+    valorB = buscar_en_B(matB, alumno_buscar, materia_buscar)
+
+    print("\n--- RESULTADOS DE LA BÚSQUEDA ---")
+    print(f"Valor en Layout A (materias como filas): {valorA}")
+    print(f"Valor en Layout B (alumnos como filas): {valorB}")
+
+    # Medición de tiempos
+    tA, tB = medir_tiempo(matA, matB, n_alumnos, n_materias)
+    print("\n--- TIEMPOS DE ACCESO (10000 accesos aleatorios) ---")
+    print(f"Tiempo Layout A: {tA:.6f} segundos")
+    print(f"Tiempo Layout B: {tB:.6f} segundos")
