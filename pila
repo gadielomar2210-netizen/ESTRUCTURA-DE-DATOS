@@ -1,0 +1,72 @@
+class Pila:
+    def __init__(self):
+        self.items = []
+
+    def esta_vacia(self):
+        return len(self.items) == 0
+
+    def apilar(self, item):
+        self.items.append(item)
+        print(f"Elemento '{item}' agregado a la pila.")
+
+    def desapilar(self):
+        if not self.esta_vacia():
+            elemento = self.items.pop()
+            print(f"Elemento '{elemento}' removido de la pila.")
+            return elemento
+        else:
+            print("⚠️ La pila está vacía. No se puede desapilar.")
+
+    def cima(self):
+        if not self.esta_vacia():
+            return self.items[-1]
+        else:
+            print("⚠️ La pila está vacía.")
+            return None
+
+    def tamano(self):
+        return len(self.items)
+
+    def mostrar(self):
+        if not self.esta_vacia():
+            print("Pila actual:", self.items)
+        else:
+            print("La pila está vacía.")
+
+
+def menu():
+    pila = Pila()
+
+    while True:
+        print("\n--- MENÚ PILA ---")
+        print("1. Apilar (push)")
+        print("2. Desapilar (pop)")
+        print("3. Ver cima (peek)")
+        print("4. Ver tamaño")
+        print("5. Mostrar pila")
+        print("6. Salir")
+
+        opcion = input("Elige una opción: ")
+
+        if opcion == "1":
+            valor = input("Ingresa el valor a apilar: ")
+            pila.apilar(valor)
+        elif opcion == "2":
+            pila.desapilar()
+        elif opcion == "3":
+            cima = pila.cima()
+            if cima is not None:
+                print("Cima de la pila:", cima)
+        elif opcion == "4":
+            print("Tamaño de la pila:", pila.tamano())
+        elif opcion == "5":
+            pila.mostrar()
+        elif opcion == "6":
+            print("Saliendo del programa...")
+            break
+        else:
+            print("Opción no válida, intenta de nuevo.")
+
+
+if __name__ == "__main__":
+    menu()
