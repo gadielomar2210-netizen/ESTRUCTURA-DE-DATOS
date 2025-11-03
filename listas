@@ -1,0 +1,235 @@
+# -*- coding: utf-8 -*-
+"""
+Gestión de POSTRES:
+- POSTRES es una lista ordenada alfabéticamente de diccionarios {'nombre': str, 'ingredientes': [str,...]}
+Operaciones:
+ a) Mostrar ingredientes de un postre
+ b) Insertar nuevos ingredientes a un postre
+ c) Eliminar un ingrediente de un postre
+ d) Dar de alta un postre con ingredientes
+ e) Dar de baja un postre (y sus ingredientes)
+ 2) Eliminar automáticamente elementos repetidos en POSTRES (manejo de listas)
+"""
+
+from typing import List, Dict
+import sys
+
+# --- Utils de visualización (ANSI) ---
+RESET = "\033[0m"
+BOLD = "\033[1m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+RED = "\033[91m"
+CYAN = "\033[96m"
+
+def colored(s, color=""):
+    return f"{color}{s}{RESET}" if color else s
+
+# --- Estructura POSTRES ---
+# Cada elemento: {'nombre': 'Arroz con leche', 'ingredientes': ['leche', 'arroz', ...]}
+POSTRES: List[Dict[str, List[str]]] = [
+    {'nombre': 'Brownie', 'ingredientes': ['chocolate', 'harina', 'huevos', 'mantequilla']},
+    {'nombre': 'Cheesecake', 'ingredientes': ['queso crema', 'galletas', 'mantequilla', 'huevo']},
+    {'nombre': 'Flan', 'ingredientes': ['huevos', 'leche', 'azúcar', 'vainilla']},
+    {'nombre': 'Tiramisu', 'ingredientes': ['mascarpone', 'café', 'bizcochos', 'azúcar', 'huevos']}
+]
+# Mantener siempre POSTRES ordenado por 'nombre'
+POSTRES.sort(key=lambda x: x['nombre'].lower())
+
+# --- Funciones auxiliares ---
+def buscar_indice_postre(nombre: str) -> int:
+    """Buscar el índice de un postre por nombre (búsqueda binaria aprovecha orden alfabético).
+    Devuelve índice o -1 si no existe."""
+    nombre = nombre.strip().lower()
+    lo, hi = 0, len(POSTRES) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        mid_nombre = POSTRES[mid]['nombre'].lower()
+        if mid_nombre == nombre:
+            return mid
+        elif mid_nombre < nombre:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+
+def mostrar_postres():
+    if not POSTRES:
+        print(colored("No hay postres registrados.", YELLOW))
+        return
+    print(colored("POSTRES (ordenados):", BOLD))
+    for p in POSTRES:
+        print(f" - {p['nombre']} ({len(p['ingredientes'])} ingredientes)")
+
+# --- a) Dado nombre de postre, imprimir lista de ingredientes ---
+def imprimir_ingredientes(nombre: str):
+    i = buscar_indice_postre(nombre)
+    if i == -1:
+        print(colored(f"El postre '{nombre}' no está en POSTRES.", RED))
+        return
+    ingredientes = POSTRES[i]['ingredientes']
+    print(colored(f"Ingredientes de '{POSTRES[i]['nombre']}':", CYAN))
+    for idx, ing in enumerate(ingredientes, 1):
+        print(f"  {idx}. {ing}")
+
+# --- b) Insertar nuevos ingredientes a la lista de un postre ---
+def insertar_ingredientes(nombre: str, nuevos: List[str]):
+    i = buscar_indice_postre(nombre)
+    if i == -1:
+        print(colored(f"No se puede insertar: el postre '{nombre}' no existe.", RED))
+        return
+    actual = POSTRES[i]['ingredientes']
+    añadidos = []
+    repetidos = []
+    for ing in nuevos:
+        ing_clean = ing.strip()
+        if not ing_clean:
+            continue
+        if ing_clean.lower() in (x.lower() for x in actual):
+            repetidos.append(ing_clean)
+        else:
+            actual.append(ing_clean)
+            añadidos.append(ing_clean)
+    if añadidos:
+        print(colored(f"Añadidos al postre '{POSTRES[i]['nombre']}': {añadidos}", GREEN))
+    if repetidos:
+        print(colored(f"Los siguientes ingredientes ya estaban presentes y no se duplicaron: {repetidos}", YELLOW))
+
+# --- c) Eliminar algún ingrediente de un postre ---
+def eliminar_ingrediente(nombre: str, ingrediente: str):
+    i = buscar_indice_postre(nombre)
+    if i == -1:
+        print(colored(f"No se puede eliminar: el postre '{nombre}' no existe.", RED))
+        return
+    actual = POSTRES[i]['ingredientes']
+    # remover ignorando mayúsculas/minúsculas
+    for idx, ing in enumerate(actual):
+        if ing.lower() == ingrediente.strip().lower():
+            removed = actual.pop(idx)
+            print(colored(f"Ingrediente '{removed}' eliminado del postre '{POSTRES[i]['nombre']}'.", GREEN))
+            return
+    print(colored(f"El ingrediente '{ingrediente}' no se encontró en '{POSTRES[i]['nombre']}'.", YELLOW))
+
+# --- d) Dar de alta un postre con todos sus ingredientes ---
+def alta_postre(nombre: str, ingredientes: List[str], merge_if_exists: bool = False):
+    if buscar_indice_postre(nombre) != -1:
+        if merge_if_exists:
+            print(colored(f"El postre '{nombre}' ya existe. Se intentará fusionar ingredientes.", YELLOW))
+            insertar_ingredientes(nombre, ingredientes)
+            return
+        else:
+            print(colored(f"No se puede dar de alta: '{nombre}' ya existe.", RED))
+            return
+    # limpiar ingredientes (sin vacíos) y mantener único por mayúsc/minusc
+    clean = []
+    seen = set()
+    for ing in ingredientes:
+        ingc = ing.strip()
+        if not ingc:
+            continue
+        key = ingc.lower()
+        if key not in seen:
+            clean.append(ingc)
+            seen.add(key)
+    POSTRES.append({'nombre': nombre.strip(), 'ingredientes': clean})
+    POSTRES.sort(key=lambda x: x['nombre'].lower())
+    print(colored(f"Postre '{nombre}' dado de alta con {len(clean)} ingredientes.", GREEN))
+
+# --- e) Dar de baja un postre con todos sus ingredientes ---
+def baja_postre(nombre: str):
+    i = buscar_indice_postre(nombre)
+    if i == -1:
+        print(colored(f"No se puede dar de baja: el postre '{nombre}' no existe.", RED))
+        return
+    removed = POSTRES.pop(i)
+    print(colored(f"Postre '{removed['nombre']}' y su lista de ingredientes eliminados.", GREEN))
+
+# --- 2) Eliminar elementos repetidos automáticamente ---
+def eliminar_duplicaados_y_fusionar() -> Dict[str,int]:
+    """
+    Elimina postres con nombres repetidos (ignorando mayúsculas/minúsculas).
+    Cuando hay duplicados, se fusionan sus listas de ingredientes en una sola lista
+    sin ingredientes repetidos (unión). Devuelve un resumen.
+    """
+    mapa = {}  # clave (lower name) -> {'nombre_original': first_case_name, 'ingredientes': set(...) }
+    resumen = {'originales': 0, 'eliminados': 0, 'fusionados': 0}
+    for p in POSTRES:
+        clave = p['nombre'].strip().lower()
+        resumen['originales'] += 1
+        if clave not in mapa:
+            mapa[clave] = {
+                'nombre_original': p['nombre'].strip(),
+                'ingredientes': {ing.strip() for ing in p['ingredientes'] if ing.strip()}
+            }
+        else:
+            # fusionar ingredientes
+            antes = len(mapa[clave]['ingredientes'])
+            mapa[clave]['ingredientes'].update({ing.strip() for ing in p['ingredientes'] if ing.strip()})
+            despues = len(mapa[clave]['ingredientes'])
+            resumen['fusionados'] += 1  # contamos que hubo un duplicado fusionado
+    # Reconstruir POSTRES desde mapa
+    nueva_lista = []
+    for clave in sorted(mapa.keys()):
+        nombre_original = mapa[clave]['nombre_original']
+        ingredientes = sorted(mapa[clave]['ingredientes'], key=str.lower)
+        nueva_lista.append({'nombre': nombre_original, 'ingredientes': ingredientes})
+    eliminados = resumen['originales'] - len(nueva_lista)
+    resumen['eliminados'] = eliminados
+    # reemplazar POSTRES (modifica estructura global)
+    POSTRES.clear()
+    POSTRES.extend(nueva_lista)
+    return resumen
+
+# --- Demo / Interactivo sencillo ---
+def demo_interactivo():
+    print(colored("Demo gestor POSTRES", BOLD))
+    while True:
+        print()
+        mostrar_postres()
+        print()
+        print(colored("Opciones:", CYAN))
+        print(" a) Mostrar ingredientes de un postre")
+        print(" b) Insertar ingredientes a un postre")
+        print(" c) Eliminar ingrediente de un postre")
+        print(" d) Dar de alta un postre")
+        print(" e) Dar de baja un postre")
+        print(" f) Eliminar duplicados y fusionar listas (punto 2)")
+        print(" q) Salir")
+        opt = input(colored("Elige opción: ", BOLD)).strip().lower()
+        if opt == 'a':
+            n = input("Nombre del postre: ")
+            imprimir_ingredientes(n)
+        elif opt == 'b':
+            n = input("Nombre del postre: ")
+            raw = input("Lista de ingredientes nuevos (separados por coma): ")
+            nuevos = [x.strip() for x in raw.split(',')]
+            insertar_ingredientes(n, nuevos)
+        elif opt == 'c':
+            n = input("Nombre del postre: ")
+            ing = input("Ingrediente a eliminar: ")
+            eliminar_ingrediente(n, ing)
+        elif opt == 'd':
+            n = input("Nombre del nuevo postre: ")
+            raw = input("Ingredientes (separados por coma): ")
+            ingr = [x.strip() for x in raw.split(',')]
+            alta_postre(n, ingr, merge_if_exists=False)
+        elif opt == 'e':
+            n = input("Nombre del postre a dar de baja: ")
+            baja_postre(n)
+        elif opt == 'f':
+            resumen = eliminar_duplicaados_y_fusionar()
+            print(colored("Resumen de eliminación de duplicados:", BOLD))
+            print(resumen)
+        elif opt == 'q':
+            print(colored("Saliendo...", YELLOW))
+            break
+        else:
+            print(colored("Opción no válida.", RED))
+
+# Si se ejecuta este archivo como script, lanzar demo
+if __name__ == "__main__":
+    try:
+        demo_interactivo()
+    except KeyboardInterrupt:
+        print("\n" + colored("Interrupción por teclado. Hasta luego.", YELLOW))
+        sys.exit(0)
