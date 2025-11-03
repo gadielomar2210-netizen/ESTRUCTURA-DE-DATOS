@@ -1,0 +1,219 @@
+class Nodo:
+    def __init__(self, dato):
+        self.dato = dato
+        self.izq = None
+        self.der = None
+
+
+class Arbol:
+    def __init__(self):
+        self.raiz = None
+
+    # -------------------- INSERTAR --------------------
+    def insertar(self, dato):
+        if self.raiz is None:
+            self.raiz = Nodo(dato)
+        else:
+            self._insertar(self.raiz, dato)
+
+    def _insertar(self, actual, dato):
+        if dato < actual.dato:
+            if actual.izq is None:
+                actual.izq = Nodo(dato)
+            else:
+                self._insertar(actual.izq, dato)
+        elif dato > actual.dato:
+            if actual.der is None:
+                actual.der = Nodo(dato)
+            else:
+                self._insertar(actual.der, dato)
+
+    # -------------------- BUSCAR --------------------
+    def buscar(self, dato):
+        return self._buscar(self.raiz, dato)
+
+    def _buscar(self, actual, dato):
+        if actual is None:
+            return False
+        if actual.dato == dato:
+            return True
+        elif dato < actual.dato:
+            return self._buscar(actual.izq, dato)
+        else:
+            return self._buscar(actual.der, dato)
+
+    # -------------------- RECORRIDOS --------------------
+    def preorden(self, nodo=None):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo:
+            print(nodo.dato, end=" ")
+            self.preorden(nodo.izq)
+            self.preorden(nodo.der)
+
+    def inorden(self, nodo=None):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo:
+            self.inorden(nodo.izq)
+            print(nodo.dato, end=" ")
+            self.inorden(nodo.der)
+
+    def postorden(self, nodo=None):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo:
+            self.postorden(nodo.izq)
+            self.postorden(nodo.der)
+            print(nodo.dato, end=" ")
+
+    # -------------------- ALTURA --------------------
+    def altura(self, nodo=None):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo is None:
+            return 0
+        return 1 + max(self.altura(nodo.izq), self.altura(nodo.der))
+
+    # -------------------- CONTAR HOJAS --------------------
+    def contar_hojas(self, nodo=None):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo is None:
+            return 0
+        if nodo.izq is None and nodo.der is None:
+            return 1
+        return self.contar_hojas(nodo.izq) + self.contar_hojas(nodo.der)
+
+    # -------------------- CONTAR NODOS --------------------
+    def contar_nodos(self, nodo=None):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo is None:
+            return 0
+        return 1 + self.contar_nodos(nodo.izq) + self.contar_nodos(nodo.der)
+
+    # -------------------- ELIMINAR --------------------
+    def eliminar(self, dato):
+        self.raiz = self._eliminar(self.raiz, dato)
+
+    def _eliminar(self, nodo, dato):
+        if nodo is None:
+            return nodo
+        if dato < nodo.dato:
+            nodo.izq = self._eliminar(nodo.izq, dato)
+        elif dato > nodo.dato:
+            nodo.der = self._eliminar(nodo.der, dato)
+        else:
+            # Nodo encontrado
+            if nodo.izq is None:
+                return nodo.der
+            elif nodo.der is None:
+                return nodo.izq
+
+            # Nodo con dos hijos → buscar sucesor
+            sucesor = self._minimo(nodo.der)
+            nodo.dato = sucesor.dato
+            nodo.der = self._eliminar(nodo.der, sucesor.dato)
+        return nodo
+
+    def _minimo(self, nodo):
+        actual = nodo
+        while actual.izq is not None:
+            actual = actual.izq
+        return actual
+
+    # -------------------- COMPLETO Y LLENO --------------------
+    def es_completo(self):
+        nodos = []
+        self._nivel(self.raiz, nodos)
+        for i in range(len(nodos)):
+            if nodos[i] is None and any(nodos[j] is not None for j in range(i + 1, len(nodos))):
+                return False
+        return True
+
+    def es_lleno(self, nodo=None):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo is None:
+            return True
+        if (nodo.izq is None) != (nodo.der is None):
+            return False
+        return self.es_lleno(nodo.izq) and self.es_lleno(nodo.der)
+
+    def _nivel(self, nodo, lista):
+        if nodo is None:
+            lista.append(None)
+        else:
+            lista.append(nodo)
+            self._nivel(nodo.izq, lista)
+            self._nivel(nodo.der, lista)
+
+    # -------------------- IMPRIMIR ARBOL --------------------
+    def mostrar_acostado(self, nodo=None, nivel=0):
+        if nodo is None:
+            nodo = self.raiz
+        if nodo is not None:
+            self.mostrar_acostado(nodo.der, nivel + 1)
+            print("    " * nivel + f"→ {nodo.dato}")
+            self.mostrar_acostado(nodo.izq, nivel + 1)
+
+
+# -------------------- MENÚ PRINCIPAL --------------------
+
+def menu():
+    arbol = Arbol()
+    while True:
+        print("\n========= MENÚ ÁRBOL BINARIO =========")
+        print("[1] Insertar elemento")
+        print("[2] Mostrar árbol acostado")
+        print("[3] Buscar elemento")
+        print("[4] Recorrer Preorden")
+        print("[5] Recorrer Inorden")
+        print("[6] Recorrer Postorden")
+        print("[7] Altura del árbol")
+        print("[8] Cantidad de hojas")
+        print("[9] Cantidad de nodos")
+        print("[10] Eliminar nodo")
+        print("[11] Ver si es completo")
+        print("[12] Ver si es lleno")
+        print("[13] Salir")
+
+        opcion = input("Selecciona una opción: ")
+
+        if opcion == "1":
+            valor = int(input("Dato a insertar: "))
+            arbol.insertar(valor)
+        elif opcion == "2":
+            arbol.mostrar_acostado()
+        elif opcion == "3":
+            valor = int(input("Dato a buscar: "))
+            print("Encontrado" if arbol.buscar(valor) else "No encontrado")
+        elif opcion == "4":
+            arbol.preorden()
+        elif opcion == "5":
+            arbol.inorden()
+        elif opcion == "6":
+            arbol.postorden()
+        elif opcion == "7":
+            print("Altura:", arbol.altura())
+        elif opcion == "8":
+            print("Cantidad de hojas:", arbol.contar_hojas())
+        elif opcion == "9":
+            print("Cantidad de nodos:", arbol.contar_nodos())
+        elif opcion == "10":
+            valor = int(input("Dato a eliminar: "))
+            arbol.eliminar(valor)
+        elif opcion == "11":
+            print("Es completo" if arbol.es_completo() else "No es completo")
+        elif opcion == "12":
+            print("Es lleno" if arbol.es_lleno() else "No es lleno")
+        elif opcion == "13":
+            print("Saliendo...")
+            break
+        else:
+            print("Opción inválida. Intenta de nuevo.")
+
+
+if __name__ == "__main__":
+    menu()
