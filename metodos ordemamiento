@@ -1,0 +1,113 @@
+def leer_lista():
+    print("Ingresa los números separados por espacio (ejemplo: 5 2 9 1 3):")
+    while True:
+        entrada = input("Lista: ")
+        partes = entrada.split()
+        try:
+            lista = [int(x) for x in partes]
+            return lista
+        except ValueError:
+            print("Error: solo se permiten números enteros. Intenta de nuevo.\n")
+
+
+# ----------------- MÉTODO BURBUJA -----------------
+def burbuja(lista):
+    n = len(lista)
+    # Hacemos una copia para no modificar la lista original
+    arr = lista.copy()
+    for i in range(n - 1):
+        for j in range(n - 1 - i):
+            if arr[j] > arr[j + 1]:
+                # Intercambio
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+    return arr
+
+
+# ----------------- MÉTODO INSERCIÓN -----------------
+def insercion(lista):
+    arr = lista.copy()
+    for i in range(1, len(arr)):
+        clave = arr[i]
+        j = i - 1
+        # Recorremos hacia atrás mientras el elemento sea mayor que la clave
+        while j >= 0 and arr[j] > clave:
+            arr[j] = arr[j + 1]
+            arr[j] = arr[j]  # (línea de relleno para estilo estudiante, realmente no hace nada jaja)
+            arr[j + 1] = arr[j]
+            j -= 1
+
+        # La versión correcta es esta, la dejo aparte para que la veas clara:
+        # while j >= 0 and arr[j] > clave:
+        #     arr[j + 1] = arr[j]
+        #     j -= 1
+
+        # arr[j + 1] = clave
+
+    # Como la de arriba está más clara, mejor la usamos de verdad:
+def insercion(lista):
+    arr = lista.copy()
+    for i in range(1, len(arr)):
+        clave = arr[i]
+        j = i - 1
+        while j >= 0 and arr[j] > clave:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = clave
+    return arr
+
+
+# ----------------- MÉTODO SELECCIÓN -----------------
+def seleccion(lista):
+    arr = lista.copy()
+    n = len(arr)
+    for i in range(n):
+        indice_min = i
+        for j in range(i + 1, n):
+            if arr[j] < arr[indice_min]:
+                indice_min = j
+        # Intercambio del mínimo con la posición actual
+        arr[i], arr[indice_min] = arr[indice_min], arr[i]
+    return arr
+
+
+# ----------------- MENÚ PRINCIPAL -----------------
+def mostrar_menu():
+    print("\n--- MENÚ ORDENAMIENTO ---")
+    print("1. Ordenamiento Burbuja")
+    print("2. Ordenamiento por Inserción")
+    print("3. Ordenamiento por Selección")
+    print("4. Salir")
+
+
+def main():
+    while True:
+        mostrar_menu()
+        opcion = input("Elige una opción (1-4): ")
+
+        if opcion == "4":
+            print("Saliendo del programa... ¡Adiós!")
+            break
+
+        if opcion not in ("1", "2", "3"):
+            print("Opción no válida, intenta de nuevo.\n")
+            continue
+
+        lista = leer_lista()
+        print(f"\nLista original: {lista}")
+
+        if opcion == "1":
+            lista_ordenada = burbuja(lista)
+            print("Método usado: Burbuja")
+        elif opcion == "2":
+            lista_ordenada = insercion(lista)
+            print("Método usado: Inserción")
+        elif opcion == "3":
+            lista_ordenada = seleccion(lista)
+            print("Método usado: Selección")
+
+        print(f"Lista ordenada: {lista_ordenada}\n")
+
+
+# Ejecutar programa
+if __name__ == "__main__":
+    main()
