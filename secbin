@@ -1,0 +1,102 @@
+import time
+
+def busqueda_secuencial(lista, objetivo):
+    print("\n--- BÚSQUEDA SECUENCIAL ---")
+    for indice, elemento in enumerate(lista):
+        print(f"Comparando posición {indice}: {elemento}")
+        if elemento == objetivo:
+            print(f"✔ Elemento encontrado en la posición {indice}")
+            return indice
+    print("✘ Elemento NO encontrado en la lista")
+    return -1
+
+def busqueda_binaria(lista, objetivo):
+    print("\n--- BÚSQUEDA BINARIA ---")
+    inicio = 0
+    fin = len(lista) - 1
+    while inicio <= fin:
+        medio = (inicio + fin) // 2
+        print(f"Rango actual: inicio={inicio}, fin={fin}, medio={medio}, valor_medio={lista[medio]}")
+        if lista[medio] == objetivo:
+            print(f"✔ Elemento encontrado en la posición {medio}")
+            return medio
+        elif objetivo < lista[medio]:
+            print("El valor buscado es MENOR que el valor medio → buscar en la parte izquierda")
+            fin = medio - 1
+        else:
+            print("El valor buscado es MAYOR que el valor medio → buscar en la parte derecha")
+            inicio = medio + 1
+    print("✘ Elemento NO encontrado en la lista")
+    return -1
+
+def busqueda_hash(tabla, clave):
+    print("\n--- BÚSQUEDA CON HASH (diccionario) ---")
+    print(f"Buscando la clave: {clave}")
+    if clave in tabla:
+        print("✔ Clave encontrada. Valor asociado:", tabla[clave])
+        return tabla[clave]
+    else:
+        print("✘ Clave NO encontrada en la tabla")
+        return None
+
+def mostrar_datos():
+    print("\nDatos usados en los ejercicios:")
+    print("1) Lista de productos (para búsqueda secuencial):")
+    print(lista_productos)
+    print("\n2) Lista de matrículas ordenadas (para búsqueda binaria):")
+    print(lista_matriculas)
+    print("\n3) Tabla hash de estudiantes (clave = matrícula, valor = nombre):")
+    print(tabla_estudiantes)
+
+def menu():
+    while True:
+        print("""
+==================================
+        MENÚ DE BÚSQUEDA
+==================================
+1) Búsqueda Secuencial (productos)
+2) Búsqueda Binaria (matrículas)
+3) Búsqueda Hash (diccionario estudiantes)
+4) Mostrar datos de ejemplo
+5) Salir
+""")
+        opcion = input("Elige una opción: ")
+        if opcion == "1":
+            try:
+                codigo = int(input("Ingresa el código de producto a buscar: "))
+            except ValueError:
+                print("Error: debes ingresar un número entero.")
+                continue
+            busqueda_secuencial(lista_productos, codigo)
+        elif opcion == "2":
+            try:
+                matricula = int(input("Ingresa la matrícula a buscar: "))
+            except ValueError:
+                print("Error: debes ingresar un número entero.")
+                continue
+            busqueda_binaria(lista_matriculas, matricula)
+        elif opcion == "3":
+            clave = input("Ingresa la matrícula del estudiante a buscar (ej. A001): ").strip().upper()
+            busqueda_hash(tabla_estudiantes, clave)
+        elif opcion == "4":
+            mostrar_datos()
+        elif opcion == "5":
+            print("Saliendo del programa...")
+            time.sleep(1)
+            break
+        else:
+            print("Opción no válida. Intenta de nuevo.")
+
+# Datos de ejemplo para los tres ejercicios
+lista_productos = [105, 210, 37, 89, 450, 12, 999, 73, 18, 305]
+lista_matriculas = sorted([1001, 1005, 1010, 1020, 1050, 1100, 1200, 1300, 1400, 1500])
+tabla_estudiantes = {
+    "A001": "Ana Pérez",
+    "A015": "Luis Gómez",
+    "A023": "María López",
+    "A045": "Carlos Ruiz",
+    "A050": "Lucía Díaz"
+}
+
+if __name__ == "__main__":
+    menu()
